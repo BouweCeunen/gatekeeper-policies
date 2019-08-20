@@ -1,0 +1,14 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredResources
+metadata:
+  name: resources-policy
+spec:
+  match:
+    kinds:
+      - apiGroups: ["batch", "extensions", "apps", ""]
+        kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet", "DaemonSet"]
+  parameters:
+    requests_cpu: "1000m"
+    requests_memory: "4Gi"
+    limits_cpu: "4000m"
+    limits_memory: "8Gi"

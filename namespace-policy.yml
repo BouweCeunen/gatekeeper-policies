@@ -1,0 +1,9 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequiredNamespace
+metadata:
+  name: namespace-policy
+spec:
+  match:
+    kinds:
+      - apiGroups: ["batch", "extensions", "apps", ""]
+        kinds: ["Deployment", "Pod", "CronJob", "Job", "StatefulSet", "DaemonSet", "ConfigMap", "Service"]

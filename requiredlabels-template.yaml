@@ -1,0 +1,59 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequiredlabels
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequiredLabels
+        listKind: K8sRequiredLabelsList
+        plural: k8srequiredlabels
+        singular: k8srequiredlabels
+      validation:
+        # Schema for the `parameters` field
+        openAPIV3Schema:
+          properties:
+            labels:
+              type: array
+              items: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequiredlabels
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          input.review.object
+          provided := {label | input.review.object.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("you must provide labels of root object metadata: %v", [missing])
+        }
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          input.review.object.spec.template
+          provided := {label | input.review.object.spec.template.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("you must provide labels of template object metadata: %v", [missing])
+        }
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          input.review.object.spec.jobTemplate
+          provided := {label | input.review.object.spec.jobTemplate.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("you must provide labels of jobTemplate object metadata: %v", [missing])
+        }
+
+        violation[{"msg": msg, "details": {"missing_labels": missing}}] {
+          input.review.object.spec.jobTemplate.spec.template
+          provided := {label | input.review.object.spec.jobTemplate.spec.template.metadata.labels[label]}
+          required := {label | label := input.parameters.labels[_]}
+          missing := required - provided
+          count(missing) > 0
+          msg := sprintf("you must provide labels of jobTemplate template object metadata: %v", [missing])
+        }
